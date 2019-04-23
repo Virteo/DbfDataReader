@@ -10,15 +10,15 @@ namespace DbfDataReader
         private const int HeaderMetaDataSize = 33;
         private const int ColumnMetaDataSize = 32;
 
-        public DbfTable(string path, Encoding encoding)
+        public DbfTable(string path, Encoding encoding = null)
         {
             if (!File.Exists(path)) throw new FileNotFoundException();
 
             Path = path;
-            CurrentEncoding = encoding;
+            CurrentEncoding = encoding ?? CodePagesEncodingProvider.Instance.GetEncoding(10000);
 
             var stream = new FileStream(path, FileMode.Open);
-            BinaryReader = new BinaryReader(stream, encoding, false);
+            BinaryReader = new BinaryReader(stream, CurrentEncoding, false);
 
             Header = new DbfHeader(BinaryReader);
             Columns = ReadColumns(BinaryReader);
@@ -28,17 +28,17 @@ namespace DbfDataReader
             if (!string.IsNullOrEmpty(memoPath)) Memo = CreateMemo(memoPath);
         }
 
-        public DbfTable(Stream stream, Encoding encoding)
+        public DbfTable(Stream stream, Encoding encoding = null)
             : this(stream, null, encoding)
         {
         }
 
-        public DbfTable(Stream stream, Stream memoStream, Encoding encoding)
+        public DbfTable(Stream stream, Stream memoStream, Encoding encoding = null)
         {
             Path = string.Empty;
-            CurrentEncoding = encoding;
+            CurrentEncoding = encoding ?? CodePagesEncodingProvider.Instance.GetEncoding(10000);
 
-            BinaryReader = new BinaryReader(stream, encoding, true);
+            BinaryReader = new BinaryReader(stream, CurrentEncoding, true);
 
             Header = new DbfHeader(BinaryReader);
             Columns = ReadColumns(BinaryReader);
